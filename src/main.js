@@ -12,6 +12,9 @@ let take;
 let microphone;
 let unsubscribe;
 let loading = false;
+let leaving = false;
+let preparedMicrophone;
+const pageLifetime = new AbortController();
 
 // Production previews cache the app shell and the hosted runtime for offline reloads.
 // Development keeps Vite's live modules untouched.
@@ -57,11 +60,12 @@ function observe(event) {
 }
 
 start.addEventListener('click', async () => {
-  if (loading || microphone) return;
+  if (leaving || loading || microphone) return;
   // Capture permission/audio setup in the user gesture, before a model download.
   let prepared;
   try {
     prepared = prepareMicrophone();
+    preparedMicrophone = prepared;
   } catch (error) {
     status.textContent = `Microphone setup needs HTTPS or localhost and a supported browser: ${error instanceof Error ? error.message : String(error)}`;
     return;
@@ -73,18 +77,31 @@ start.addEventListener('click', async () => {
   position.textContent = 'Finding your place';
   try {
     await offlinePreparation;
+    if (leaving) return;
     if (!engine) {
-      engine = await createTilawa({
+      const loaded = await createTilawa({
+        signal: pageLifetime.signal,
         tier: 'lite',
         onProgress: progress => {
           download.value = progress.fraction;
           status.textContent = `Preparing ${progress.stage}: ${Math.round(progress.fraction * 100)}%`;
         },
       });
+      if (leaving) {
+        await loaded.dispose();
+        return;
+      }
+      engine = loaded;
     }
     take = engine.startMemorization({ surah: 1, fromAyah: 1, toAyah: 7 });
     unsubscribe = take.subscribe(observe);
-    microphone = await engine.listen(take, { prepared });
+    const opened = await engine.listen(take, { prepared });
+    if (leaving) {
+      await opened.stop();
+      return;
+    }
+    microphone = opened;
+    preparedMicrophone = undefined;
     stop.disabled = false;
     status.textContent = `Listening on this device (${engine.model.backend}). Audio is not uploaded.`;
   } catch (error) {
@@ -97,6 +114,7 @@ start.addEventListener('click', async () => {
       : `Could not start: ${error instanceof Error ? error.message : String(error)}`;
     start.disabled = false;
   } finally {
+    if (preparedMicrophone === prepared) preparedMicrophone = undefined;
     loading = false;
   }
 });
@@ -120,7 +138,15 @@ stop.addEventListener('click', async () => {
 });
 
 window.addEventListener('pagehide', () => {
-  // Stop device capture when the page leaves; disposal releases the model too.
+  leaving = true;
+  // Cancel first-load downloads and release capture even before listen() owns it.
+  pageLifetime.abort();
+  preparedMicrophone?.release();
+  preparedMicrophone = undefined;
   void microphone?.stop().catch(() => {});
   void engine?.dispose();
+});
+window.addEventListener('pageshow', event => {
+  // A restored document contains disposed sessions and an aborted lifetime.
+  if (event.persisted) window.location.reload();
 });
