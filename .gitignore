@@ -1,0 +1,6 @@
+node_modules/
+dist/
+*.onnx
+*.wav
+.env*
+.DS_Store

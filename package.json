@@ -1,0 +1,18 @@
+{
+  "name": "tilawa-offline-example",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@tilawa/core": "1.0.0-rc.1",
+    "onnxruntime-web": "1.30.0"
+  },
+  "devDependencies": {
+    "vite": "^7.0.0"
+  }
+}

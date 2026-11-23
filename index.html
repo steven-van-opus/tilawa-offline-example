@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>On-device recitation practice example</title></head>
+<body><main><p class="eyebrow">CREATORS TOOLBOX EXAMPLE</p><h1>Practise a passage privately</h1>
+<p>This example follows Al-Fatihah (surah 1, ayahs 1 to 7). It shows word coordinates and possible memorization mistakes, without rendering or altering Quran text.</p>
+<p class="notice">Preview quality. A flag is a prompt to review with a teacher. This does not assess tajweed or pronunciation. Hafs only; children's voices and fast hadr are outside the supported evaluation.</p>
+<div class="controls"><button id="start">Start a take</button><button id="stop" disabled>Stop and review</button></div>
+<p id="status" role="status">The first start downloads the lite model and reference. Audio stays on this device.</p>
+<progress id="download" max="1" value="0" aria-label="Model download"></progress>
+<section aria-labelledby="position-title"><h2 id="position-title">Current position</h2><p id="position">Waiting for a take</p></section>
+<section aria-labelledby="flags-title"><h2 id="flags-title">Worth reviewing</h2><p>Only confirmed flags appear. Suspected or unclear audio is not a verdict.</p><ul id="flags"></ul></section>
+<details><summary>Offline and privacy details</summary><p>No audio upload code is included. The first run fetches public model, reference and runtime files from tilawa.dev. In a production build, the service worker caches the app shell and downloaded runtime. After a successful first setup, test offline reopening on your target device. Development mode supports an already open page. Browser caches can be evicted.</p></details>
+<footer><a href="https://github.com/yazinsai/tilawa">Tilawa by yazinsai</a> · <a href="https://github.com/yazinsai/tilawa/blob/main/NOTICE.md">Upstream attribution and model licenses</a></footer>
+</main><script type="module" src="/src/main.js"></script></body></html>
